@@ -22,9 +22,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| "rust_blog=debug,tower_http=debug".into()),
         )
-        .with(tracing_subscriber::fmt::layer())
+        .with(
+            tracing_subscriber::fmt::layer()
+                .with_file(true) // 显示打印日志文件名
+                .with_line_number(true) // 显示代码行号
+                .with_target(true), // 显示模块路径
+        )
         .init();
-
     // 3. 读取环境变量
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set in .env file");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set in .env file");

@@ -17,7 +17,7 @@ impl AppState {
             jwt_secret,
         }
     }
-}
+  
 impl FromRef<AppState> for String {
     fn from_ref(state: &AppState) -> Self {
         state.jwt_secret.clone()
