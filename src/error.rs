@@ -6,6 +6,7 @@ use axum::{
 use serde::Serialize;
 use thiserror::Error;
 use tracing::error;
+use validator::ValidationErrors;
 // 定义通用错误相应体
 #[derive(Serialize)]
 pub struct ErrorResponse {
@@ -19,27 +20,24 @@ pub enum AppError {
     //  注：#[from] sqlx::Error 允许从 sqlx::Error 自动转换为 AppError::Database，简化 ? 操作符的使用。
     #[error("数据库错误：{0}")]
     Database(#[from] sqlx::Error),
-
     // 资源未找到
     #[error("资源不存在：{0}")]
     NotFound(String),
-
     // 认证失败
     #[error("认证失败: {0}")]
     Unauthorized(String),
-
     // 权限不足（已登录但无权操作）
     #[error("权限不足: {0}")]
     Forbidden(String),
-
     // 业务校验失败（如参数非法）
     #[error("请求参数错误: {0}")]
     BadRequest(String),
-
     // 内部服务器错误（不可预知的异常）
     #[error("服务器内部错误: {0}")]
     Internal(String),
-
+    // 检验错误
+    #[error("Validation error: {0}")]
+    ValidationError(#[from] ValidationErrors),
     // 其他自定义错误（例如第三方 API 调用失败）
     #[error("{0}")]
     Other(String),
@@ -61,6 +59,7 @@ impl IntoResponse for AppError {
             AppError::Unauthorized(msg) => (StatusCode::UNAUTHORIZED, msg),
             AppError::Forbidden(msg) => (StatusCode::FORBIDDEN, msg),
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::ValidationError(e) => (StatusCode::BAD_GATEWAY, e.to_string()),
             AppError::Internal(msg) => {
                 error!("内部系统错误: {}", msg);
                 (

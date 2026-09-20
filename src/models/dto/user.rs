@@ -21,10 +21,18 @@ pub struct RegisterReq {
     )]
     pub email: Option<String>,
 }
-// 用户登录请求
-#[derive(Debug, Deserialize)]
+// 用户登录请求体
+#[derive(Debug, Deserialize, Validate)]
 pub struct LoginReq {
+    //validator属性宏不支持直接写函数调用语法
+    //validate自带的RFC标准的内置邮箱校验规则已经足够完善
+    // 所以这里直接使用内置的校验，如果非要自己写函数需要使用"custorm" 属性宏
+    // custom(function = "crate::util::validator::validate_email_format")
+    // 或者联合调用
+    // #[validate(length(min = 1), custom(function = "validate_unique_username"))]
+    #[validate(email(message = "邮箱格式不正确"))]
     pub email: String,
+    #[validate(length(min = 1, message = "密码不能为空"))]
     pub password: String,
     // TODO: 后期添加 邮箱验证码登录 手机号验证码登录
 }
