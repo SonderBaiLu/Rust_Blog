@@ -26,7 +26,7 @@ pub struct RegisterReq {
 pub struct LoginReq {
     //validator属性宏不支持直接写函数调用语法
     //validate自带的RFC标准的内置邮箱校验规则已经足够完善
-    // 所以这里直接使用内置的校验，如果非要自己写函数需要使用"custorm" 属性宏
+    // 所以这里直接使用内置的校验，如果非要自己写函数需要使用"custom" 属性宏
     // custom(function = "crate::util::validator::validate_email_format")
     // 或者联合调用
     // #[validate(length(min = 1), custom(function = "validate_unique_username"))]
@@ -39,13 +39,13 @@ pub struct LoginReq {
 // 用户信息响应
 #[derive(Debug, Serialize)]
 pub struct UserResp {
-    pub id: Uuid,
-    pub name: String,
-    pub email: String,
-    pub email_verified: bool,
-    pub phone: Option<String>,
-    pub is_active: bool,
-    pub created_at: DateTime<Utc>,
+    pub id: Uuid, // 用户id 自增
+    pub name: String, // 用户名称
+    pub email: String, // 用户邮箱
+    pub email_verified: bool, // 用户邮箱是否验证 默认为 否
+    pub phone: Option<String>, // 用户手机号
+    pub is_active: bool, // 是否为活跃账号
+    pub created_at: DateTime<Utc>, // 注册时间
 }
 #[derive(Debug, Serialize)]
 pub struct LoginResp {

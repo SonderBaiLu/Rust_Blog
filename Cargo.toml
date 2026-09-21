@@ -20,11 +20,11 @@ sqlx = { version = "0.9.0", features = [
   "tls-rustls",
 ] }
 # 鉴权与安全工具
-argon2 = "0.5.3"
+argon2 = "0.6.0"
 jsonwebtoken = { version = "11.0.0", features = ["rust_crypto"] }
 
 # HTTP 中间件与日志观察
-tower-http = { version = "0.7.0", features = ["compression-full", "trace"] }
+tower-http = { version = "0.7.0", features = ["compression-full", "trace", "cors"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
@@ -36,5 +36,5 @@ uuid = { version = "1.24.0", features = ["serde", "v4"] }
 chrono = { version = "0.4.45", features = ["serde"] }
 thiserror = "2.0.19"
 async-trait = "0.1.91"
-rand = "0.8"
+rand = "0.10.3"
 validator = { version = "0.21.0", features = ["derive"] }

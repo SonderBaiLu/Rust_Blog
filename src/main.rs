@@ -1,4 +1,3 @@
-use axum::Router;
 use dotenvy::dotenv;
 use rust_blog::route;
 use sqlx::postgres::PgPoolOptions;
@@ -46,14 +45,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_service = UserService::new(user_repo, jwt_secret.clone());
     // 传入 jwt_secret
     let state = AppState::new(user_service, jwt_secret);
-
     // 5. 挂载路由
-    let app = Router::new()
-        .nest("/api/users", route::user_route::user_routes())
-        .with_state(state);
+    let app = route::create_app(state);
 
     // 6. 启动 Axum Web
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
+    let addr = SocketAddr::from(([127, 0, 0, 1], 3456));
     info!("服务已启动在 http://{}", addr);
     let listener = tokio::net::TcpListener::bind(addr).await?;
     axum::serve(listener, app).await?;

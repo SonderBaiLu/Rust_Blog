@@ -32,7 +32,7 @@ impl UserService {
         }
 
         // B. 加密密码 (调用 util)
-        let password_hash = password::hash_password(&req.password)?;
+        let password_hash = password::hash_password(req.password.clone()).await?;
 
         // C. 写入数据库
         let user = self.user_repo.create_user(&req, &password_hash).await?;
@@ -62,7 +62,7 @@ impl UserService {
         }
 
         // C. 校验密码 (拦截错误以打 warn 日志)
-        if let Err(err) = password::verify_password(&req.password, &user.password_hash) {
+        if let Err(err) = password::verify_password(req.password, user.password_hash.clone()).await {
             warn!(user_id = %user.id, email = %req.email, "登录失败：密码错误");
             return Err(err);
         }
@@ -84,7 +84,6 @@ impl UserService {
             warn!(user_id = %user_id, "获取用户信息失败：用户不存在");
             AppError::NotFound("用户不存在".to_string())
         })?;
-
         Ok(UserResp::from(user))
     }
 }

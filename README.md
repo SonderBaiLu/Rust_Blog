@@ -1,6 +1,10 @@
 # 待解决问题
 ### 1. CPU密集型
-Argon2 密码哈希/校验是故意设计得极度消耗 CPU 的计算任务。在 Rust 异步生态中，如果直接在 async fn 主线程里运行耗时的密码比对，会卡住 Tokio 的 Worker 异步线程，导致其他 Concurrent 请求被排队延迟。
+-[x] TODO: Argon2 密码哈希/校验是故意设计得极度消耗 CPU 的计算任务。在 Rust 异步生态中，如果直接在 async fn 主线程里运行耗时的密码比对，会卡住 Tokio 的 Worker 异步线程，导致其他 Concurrent 请求被排队延迟。
+  **实现思路**:
+  - 具体技术难点：Tokio 是基于协作式调度（Cooperative Scheduling）的高性能异步运行时，其工作线程（Worker Threads）数量与机器的 CPU 物理核心数严格绑定。Argon2 属于高强度计算与大内存占用的 CPU 密集型算法，单次哈希运算可能耗时数十毫秒。若直接在异步上下文中同步执行，会长时间霸占当前 Worker 线程，阻塞排队在该线程上的网络 I/O 事件循环，在高并发场景下将导致系统的整体响应吞吐断崖式下跌 
+  - 利用 tokio::task::spawn_blocking 将 util/password.rs 中的 hash_password 和 verify_password 重构为异步函数，把 CPU 密集型任务派发给 Tokio 的专用阻塞线程池（Blocking Threadpool），在 Service 层通过 .await 解包结果并合理处理 JoinError
+
 
 # 开发注意事项
 1. 关于密码字段：**登录接口**只需非空/基础长度校验
