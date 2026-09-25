@@ -21,7 +21,8 @@ pub struct RegisterReq {
     )]
     pub email: Option<String>,
 }
-// 用户登录请求体
+
+// 用户登录 请求体
 #[derive(Debug, Deserialize, Validate)]
 pub struct LoginReq {
     //validator属性宏不支持直接写函数调用语法
@@ -36,22 +37,33 @@ pub struct LoginReq {
     pub password: String,
     // TODO: 后期添加 邮箱验证码登录 手机号验证码登录
 }
-// 用户信息响应
-#[derive(Debug, Serialize)]
-pub struct UserResp {
-    pub id: Uuid, // 用户id 自增
-    pub name: String, // 用户名称
-    pub email: String, // 用户邮箱
-    pub email_verified: bool, // 用户邮箱是否验证 默认为 否
-    pub phone: Option<String>, // 用户手机号
-    pub is_active: bool, // 是否为活跃账号
-    pub created_at: DateTime<Utc>, // 注册时间
-}
+// 用户登录 响应体
 #[derive(Debug, Serialize)]
 pub struct LoginResp {
     pub token: String,
     pub user: UserResp,
 }
+// 用户信息更新 请求体 TODO: 后续完善用户更新 请求体
+#[derive(Debug, Deserialize, Validate)]
+pub struct UpdateUserRequest {
+    #[validate(
+        length(min = 2, max = 20, message = "用户名长度须在2-20个字符之间"),
+        custom(function = "crate::util::validator::validate_username")
+    )]
+    pub name: Option<String>,
+}
+// 用户信息 响应体 TODO: 后续根据user实体类补全用户信息
+#[derive(Debug, Serialize)]
+pub struct UserResp {
+    pub id: Uuid,                  // 用户id 自增
+    pub name: String,              // 用户名称
+    pub email: String,             // 用户邮箱
+    pub email_verified: bool,      // 用户邮箱是否验证 默认为 否
+    pub phone: Option<String>,     // 用户手机号
+    pub is_active: bool,           // 是否为活跃账号
+    pub created_at: DateTime<Utc>, // 注册时间
+}
+// 信息脱敏
 impl From<User> for UserResp {
     fn from(user: User) -> Self {
         Self {

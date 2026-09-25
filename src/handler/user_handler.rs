@@ -1,11 +1,11 @@
-use axum::{Json, extract::State};
-use validator::Validate;
 use crate::{
     error::AppError,
     extractors::auth::AuthUser,
-    models::dto::user::{LoginReq, LoginResp, RegisterReq, UserResp},
+    models::dto::user::{LoginReq, LoginResp, RegisterReq, UpdateUserRequest, UserResp},
     state::AppState,
 };
+use axum::{Json, extract::State};
+use validator::Validate;
 
 // POST /api/users/register
 pub async fn register(
@@ -37,5 +37,18 @@ pub async fn get_me(
     let user_resp = state.user_service.get_by_id(authuser.id).await?;
 
     // 2. 返回 JSON 响应
+    Ok(Json(user_resp))
+}
+// POST /api/users/update_user_info
+pub async fn update_user_info(
+    State(state): State<AppState>,
+    auth_user: AuthUser,
+    Json(payload): Json<UpdateUserRequest>,
+) -> Result<Json<UserResp>, AppError> {
+    payload.validate()?;
+    let user_resp = state
+        .user_service
+        .update_user_info(auth_user.id, payload)
+        .await?;
     Ok(Json(user_resp))
 }

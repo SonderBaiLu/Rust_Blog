@@ -3,9 +3,12 @@ use uuid::Uuid;
 
 use crate::{
     error::AppError,
-    models::{dto::user::RegisterReq, entity::user::User},
+    models::{
+        dto::user::{RegisterReq, UpdateUserRequest},
+        entity::user::User,
+    },
 };
-
+// 持久层
 #[async_trait]
 pub trait UserRepository: Send + Sync {
     // 根据 ID 查询用户（排除已软删除用户）
@@ -14,4 +17,6 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_email(&self, email: &str) -> Result<Option<User>, AppError>;
     // 创建新用户
     async fn create_user(&self, req: &RegisterReq, password_hash: &str) -> Result<User, AppError>;
+    // 用户信息局部更新
+    async fn update_user_Info(&self, id: Uuid, req: &UpdateUserRequest) -> Result<User, AppError>;
 }

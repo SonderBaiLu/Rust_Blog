@@ -2,7 +2,7 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::models::dto::user::{LoginReq, LoginResp, RegisterReq, UserResp};
+use crate::models::dto::user::{LoginReq, LoginResp, RegisterReq, UpdateUserRequest, UserResp};
 use crate::repository::user::UserRepository;
 use crate::util::jwt::generate_token;
 use crate::util::password;
@@ -62,7 +62,8 @@ impl UserService {
         }
 
         // C. 校验密码 (拦截错误以打 warn 日志)
-        if let Err(err) = password::verify_password(req.password, user.password_hash.clone()).await {
+        if let Err(err) = password::verify_password(req.password, user.password_hash.clone()).await
+        {
             warn!(user_id = %user.id, email = %req.email, "登录失败：密码错误");
             return Err(err);
         }
@@ -84,6 +85,20 @@ impl UserService {
             warn!(user_id = %user_id, "获取用户信息失败：用户不存在");
             AppError::NotFound("用户不存在".to_string())
         })?;
+        Ok(UserResp::from(user))
+    }
+    // 用户 信息局部更新
+    #[tracing::instrument(skip(self))]
+    pub async fn update_user_info(
+        &self,
+        user_id: Uuid,
+        req: UpdateUserRequest,
+    ) -> Result<UserResp, AppError> {
+        // 调用持久层更新，直接解包得到更新后的 User 实体
+        let user = self.user_repo.update_user_Info(user_id, &req).await?;
+        // 打印业务日志
+        info!(user_id = %user_id, "用户个人资料修改成功");
+        // 转换为安全脱敏契约并返回 (标准 Ok)
         Ok(UserResp::from(user))
     }
 }
